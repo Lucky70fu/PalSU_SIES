@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block content %}
+<h1>Pending Add/Drop Requests</h1>
+<table><tr><th>Student</th><th>Term</th><th>Change</th><th>Subject</th><th>Reason</th><th>Requested by</th><th>Decision</th></tr>
+{% for c in changes %}<tr><td>{{ c.enrollment.student }}</td><td>{{ c.enrollment.term }}</td><td>{{ c.get_change_type_display }}</td><td>{% if c.to_offering %}{{ c.to_offering.curriculum_subject.subject }} / {{ c.to_offering.section }}{% elif c.from_offering %}{{ c.from_offering.curriculum_subject.subject }} / {{ c.from_offering.section }}{% else %}{{ c.subject_code }}{% endif %}</td><td>{{ c.reason }}</td><td>{{ c.changed_by }}</td><td><form method="post" action="{% url 'enrollment_change_review' c.pk %}">{% csrf_token %}<button name="decision" value="APPROVED">Approve</button><button name="decision" value="REJECTED">Reject</button></form></td></tr>{% empty %}<tr><td colspan="7">No pending requests.</td></tr>{% endfor %}</table>
+{% endblock %}

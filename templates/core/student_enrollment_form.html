@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Pre-Enrollment Form / Subject List</h1>
+<section class="panel">
+  <p><strong>Student:</strong> {{ enrollment.student }} ({{ enrollment.student.student_id }})</p>
+  <p><strong>Program:</strong> {{ enrollment.student.program }} · <strong>Year:</strong> {{ enrollment.student.year_level }}</p>
+  <p><strong>Term:</strong> {{ enrollment.term }} · <strong>Status:</strong> {{ enrollment.get_status_display }}</p>
+  <p><strong>Submitted:</strong> {{ enrollment.submitted_at|date:"M d, Y g:i A" }}</p>
+  {% if enrollment.status == "ENROLLED" or enrollment.status == "APPROVED" %}
+    <p class="message">Your enrollment has been approved. Your Certificate of Registration is available.</p>
+    {% if latest_cor %}<a class="button primary" href="{% url 'cor_list' enrollment.pk %}">Open Certificate of Registration</a>{% endif %}
+  {% elif enrollment.status == "PENDING" %}
+    <p class="muted">Your pre-enrollment form is awaiting Registrar review. The subjects below are your submitted selections, not yet a final registration.</p>
+  {% elif enrollment.status == "REJECTED" %}
+    <p class="muted">This application was not approved. Please check with the Registrar or revise it during an open enrollment period.</p>
+  {% endif %}
+</section>
+<section class="panel">
+  <h2>Selected Subjects</h2>
+  <table><tr><th>Code</th><th>Subject</th><th>Units</th><th>Section</th><th>Instructor</th><th>Schedule / Room</th></tr>
+  {% for item in items %}
+    <tr><td>{{ item.offering.curriculum_subject.subject.code }}</td><td>{{ item.offering.curriculum_subject.subject.title }}</td><td>{{ item.offering.curriculum_subject.subject.units }}</td><td>{{ item.offering.section.code }}</td><td>{{ item.offering.instructor }}</td><td>{% for schedule in item.offering.schedules.all %}{{ schedule.get_day_display }} {{ schedule.start_time|time:"H:i" }}–{{ schedule.end_time|time:"H:i" }} · {{ schedule.room }}{% if not forloop.last %}<br>{% endif %}{% empty %}Not yet scheduled{% endfor %}</td></tr>
+  {% empty %}<tr><td colspan="6">No subjects are attached to this enrollment.</td></tr>
+  {% endfor %}
+  </table>
+  <p><strong>Total Units:</strong> {{ total_units }}</p>
+</section>
+<p><a class="button" href="{% url 'student_enrollment_portal' %}">Back to My Enrollment</a>{% if enrollment.status == "ENROLLED" or enrollment.status == "APPROVED" %}{% if latest_cor %} <a class="button primary" href="{% url 'cor_print' enrollment.pk latest_cor.version %}">View / Print Latest COR</a>{% endif %}{% endif %}</p>
+{% endblock %}

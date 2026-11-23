@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>My Enrolled Subjects &amp; Forms</h1>
+<p><strong>{{ student }}</strong> · {{ student.program }} · Year {{ student.year_level }}</p>
+<section class="panel">
+  <h2>Pre-Enrollment</h2>
+  {% if open_term %}
+    <p>Enrollment is open for <strong>{{ open_term }}</strong>.</p>
+    <p><a class="button primary" href="{% url 'enrollment_planner' %}">Open Pre-Enrollment Form</a></p>
+    {% if open_enrollment %}<p class="muted">Current application status: <strong>{{ open_enrollment.get_status_display }}</strong>. You can view its saved subject selections below.</p>{% endif %}
+  {% else %}
+    <p>There is no currently open enrollment period. You can still view your previous pre-enrollment forms and approved subject lists below.</p>
+  {% endif %}
+</section>
+<h2>My Enrollment Records</h2>
+{% for enrollment in enrollments %}
+<section class="panel">
+  <div class="row" style="display:flex;justify-content:space-between;gap:1rem;align-items:center;flex-wrap:wrap">
+    <div><h3>{{ enrollment.term }}</h3><p>Status: <strong>{{ enrollment.get_status_display }}</strong> · Type: {{ enrollment.get_enrollment_type_display }} · {{ enrollment.subjects.count }} subject(s)</p>
+    {% if enrollment.status == "ENROLLED" or enrollment.status == "APPROVED" %}<p>Assessment: ₱{{ enrollment.assessed_total|floatformat:2 }} · Verified payments: ₱{{ enrollment.verified_total|floatformat:2 }} · Remaining balance: ₱{{ enrollment.balance_total|floatformat:2 }} · Payment status: <strong>{{ enrollment.payment_status_label }}</strong></p>{% endif %}</div>
+    <div><a class="button" href="{% url 'student_enrollment_form' enrollment.pk %}">View Pre-Enrollment Form / Subjects</a>
+    {% if enrollment.status == "ENROLLED" or enrollment.status == "APPROVED" %}<a class="button primary" href="{% url 'cor_list' enrollment.pk %}">View / Print COR</a> <a class="button" href="{% url 'enrollment_change_request' enrollment.pk %}">Request Add/Drop</a>{% endif %}</div>
+  </div>
+  <table>
+    <tr><th>Subject</th><th>Units</th><th>Section</th><th>Instructor</th></tr>
+    {% for item in enrollment.subjects.all %}
+      <tr><td>{{ item.offering.curriculum_subject.subject.code }} — {{ item.offering.curriculum_subject.subject.title }}</td><td>{{ item.offering.curriculum_subject.subject.units }}</td><td>{{ item.offering.section.code }}</td><td>{{ item.offering.instructor }}</td></tr>
+    {% empty %}<tr><td colspan="4">No subjects saved for this enrollment.</td></tr>{% endfor %}
+  </table>
+</section>
+{% empty %}
+<section class="panel"><p>You do not have any enrollment records yet.</p>{% if open_term %}<a class="button primary" href="{% url 'enrollment_planner' %}">Start Pre-Enrollment</a>{% endif %}</section>
+{% endfor %}
+<h2>Academic History</h2><table><tr><th>Date</th><th>Record</th><th>Term</th><th>Program</th><th>Year</th><th>Status</th><th>Notes</th></tr>{% for r in academic_records %}<tr><td>{{ r.effective_date|default:r.created_at|date:"Y-m-d" }}</td><td>{{ r.get_record_type_display }}</td><td>{{ r.term|default:"—" }}</td><td>{{ r.program|default:"—" }}</td><td>{{ r.year_level|default:"—" }}</td><td>{{ r.status }}</td><td>{{ r.notes }}</td></tr>{% empty %}<tr><td colspan="7">No academic history records yet.</td></tr>{% endfor %}</table>
+{% endblock %}

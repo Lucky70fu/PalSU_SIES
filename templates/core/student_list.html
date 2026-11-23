@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Student Records</h1>
+<p><a class="button primary" href="{% url 'student_create' %}">+ Register student</a></p>
+<form method="get" class="filter-form">
+  <input name="q" value="{{ search }}" placeholder="Search student ID, name, or email">
+  <select name="term"><option value="">Choose semester</option>{% for term in terms %}<option value="{{ term.pk }}" {% if selected_term.pk == term.pk %}selected{% endif %}>{{ term }}</option>{% endfor %}</select>
+  <select name="status"><option value="">All statuses</option><option value="ENROLLED" {% if selected_status == 'ENROLLED' %}selected{% endif %}>Enrolled</option><option value="UNENROLLED" {% if selected_status == 'UNENROLLED' %}selected{% endif %}>Unenrolled</option></select>
+  <select name="program"><option value="">All programs</option>{% for p in programs %}<option value="{{ p.pk }}" {% if selected_program == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.code }} — {{ p.name }}</option>{% endfor %}</select>
+  <select name="year"><option value="">All year levels</option>{% for n in "123456" %}<option value="{{ n }}" {% if selected_year == n %}selected{% endif %}>Year {{ n }}</option>{% endfor %}</select>
+  <button class="primary" type="submit">Filter</button> <a class="button" href="{% url 'student_list' %}">Clear</a>
+</form>
+{% if selected_term %}<p class="muted">Enrollment status shown for <strong>{{ selected_term }}</strong>. Only an enrollment with status “Enrolled” counts as enrolled.</p>{% else %}<p class="muted">Choose a semester to see each student's enrollment status for that term.</p>{% endif %}
+<table><tr><th>Student ID</th><th>Name</th><th>College</th><th>Program</th><th>Year</th><th>Status</th><th>Actions</th></tr>
+{% for row in rows %}{% with s=row.student %}<tr><td>{{ s.student_id }}</td><td><a href="{% url 'student_detail' s.pk %}">{{ s.last_name }}, {{ s.first_name }} {{ s.middle_name }}</a></td><td>{{ s.program.department.name }}</td><td>{{ s.program.code }}</td><td>{{ s.year_level }}</td><td>{% if row.status == 'ENROLLED' %}<span class="status enrolled">Enrolled</span>{% elif row.status == 'UNENROLLED' %}<span class="status unenrolled">Unenrolled</span>{% else %}—{% endif %}</td><td><a href="{% url 'student_detail' s.pk %}">View</a> {% if can_manage %}<a href="{% url 'student_edit' s.pk %}">Edit</a>{% endif %}</td></tr>{% endwith %}{% empty %}<tr><td colspan="7">No students match your filters.</td></tr>{% endfor %}</table>
+
+<div class="pagination">
+    {% if page_obj.has_previous %}
+        <a class="button"
+           href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}">
+            Previous
+        </a>
+    {% endif %}
+
+    <span>
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        ({{ page_obj.paginator.count }} students)
+    </span>
+
+    {% if page_obj.has_next %}
+        <a class="button primary"
+           href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.next_page_number }}">
+            Next
+        </a>
+    {% endif %}
+</div>
+
+{% endblock %}

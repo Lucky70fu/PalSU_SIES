@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}PalSU Enrollment System{% endblock %}</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<header>
+<a class="brand" href="/">PalSU · Student Information &amp; Enrollment System</a>
+<nav>
+{% if user.is_authenticated %}
+<a href="/">Dashboard</a><a href="/students/">Students</a><a href="{% url 'student_documents' %}">Documents</a>
+<a href="/academics/">Academic Setup</a><a href="/enrollments/">Enrollment</a>
+{% for g in user.groups.all %}
+  {% if g.name == "Student" %}<a href="{% url 'student_enrollment_portal' %}">My Enrollment</a><a href="{% url 'enrollment_planner' %}">Pre-Enrollment Form</a>{% endif %}
+  {% if g.name == "Registrar" or g.name == "Administrator" %}<a href="{% url 'enrollment_changes' %}">Add/Drop Requests</a><a href="{% url 'admission_applications' %}">Admission Applications</a>{% endif %}
+{% endfor %}
+<a href="/billing/">Billing</a><a href="/schedules/">Schedules</a><a href="/grades/">Grades / My Classes</a><a href="/reports/">Reports</a>
+<a href="{% url 'password_change' %}">Change Password</a>
+{% if user.is_superuser %}<a href="/admin/">Admin</a>{% endif %}
+<form method="post" action="/accounts/logout/" class="inline">{% csrf_token %}<button>Logout</button></form>
+{% else %}
+<a href="{% url 'admission_apply' %}">Apply for Admission</a><a href="/accounts/login/">Login</a>
+{% endif %}
+</nav>
+</header>
+<main>{% if messages %}{% for m in messages %}<div class="message">{{m}}</div>{% endfor %}{% endif %}{% block content %}{% endblock %}</main>
+<footer>Palawan State University · Main Campus · Student Information and Enrollment System · Academic Project</footer>
+</body></html>

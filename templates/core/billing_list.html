@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% block content %}
+<h1>Billing &amp; Assessment</h1>
+<p class="muted">Students can submit GCash, Maya, or bank-transfer proof. A Cashier or Administrator must verify the submission before it reduces the balance. Receipts are issued after verification.</p>
+<p>{% if is_student %}<a class="button primary" href="{% url 'record_payment' %}">Submit Online Payment Proof</a>{% endif %}{% if can_verify %}<a class="button primary" href="{% url 'record_payment' %}">Record Staff Payment</a> <a class="button" href="{% url 'financial_adjustment_create' %}">Add Scholarship / Waiver / Charge / Refund</a>{% endif %}</p>
+{% for r in rows %}
+<section class="panel">
+<h2>{{ r.enrollment.student }} · {{ r.enrollment.term }}</h2>
+<div class="detail-grid">
+<div><small>Gross assessment</small><strong>₱{{ r.gross_assessed|floatformat:2 }}</strong></div>
+<div><small>Scholarships / waivers</small><strong>₱{{ r.scholarships|floatformat:2 }}</strong></div>
+<div><small>Net assessment</small><strong>₱{{ r.assessed|floatformat:2 }}</strong></div>
+<div><small>Verified paid</small><strong>₱{{ r.paid|floatformat:2 }}</strong></div>
+<div><small>Balance</small><strong>₱{{ r.balance|floatformat:2 }}</strong></div>
+<div><small>Payment status</small><strong>{{ r.payment_status }}</strong></div>
+</div>
+<h3>Payment history and verification queue</h3>
+<table><tr><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th><th>Proof</th><th>Status / Action</th></tr>
+{% for payment in r.pending %}<tr><td>{{ payment.paid_at|date:"Y-m-d H:i" }}</td><td>₱{{ payment.amount|floatformat:2 }}</td><td>{{ payment.get_method_display }}</td><td>{{ payment.reference_no }}</td><td>{% if payment.proof_file %}<a href="{% url 'payment_proof_download' payment.pk %}">View proof</a>{% else %}—{% endif %}</td><td><strong>Pending verification</strong>{% if can_verify %}<form method="post" action="{% url 'payment_verify' payment.pk %}">{% csrf_token %}<button name="status" value="VERIFIED">Verify &amp; issue receipt</button><button name="status" value="REJECTED">Reject</button><input name="rejection_reason" placeholder="Reason if rejecting"></form>{% endif %}</td></tr>{% endfor %}
+{% for payment in r.verified_payments %}<tr><td>{{ payment.verified_at|date:"Y-m-d H:i" }}</td><td>₱{{ payment.amount|floatformat:2 }}</td><td>{{ payment.get_method_display }}</td><td>{{ payment.reference_no }}</td><td>{% if payment.proof_file %}<a href="{% url 'payment_proof_download' payment.pk %}">View proof</a>{% else %}—{% endif %}</td><td>Verified · {{ payment.receipt_number }} · <a href="{% url 'payment_receipt' payment.pk %}">View receipt</a></td></tr>{% endfor %}
+{% for payment in r.rejected_payments %}<tr><td>{{ payment.verified_at|date:"Y-m-d H:i" }}</td><td>₱{{ payment.amount|floatformat:2 }}</td><td>{{ payment.get_method_display }}</td><td>{{ payment.reference_no }}</td><td>{% if payment.proof_file %}<a href="{% url 'payment_proof_download' payment.pk %}">View proof</a>{% else %}—{% endif %}</td><td>Rejected{% if payment.rejection_reason %}: {{ payment.rejection_reason }}{% endif %}</td></tr>{% endfor %}
+{% if not r.pending and not r.verified_payments and not r.rejected_payments %}<tr><td colspan="6">No payment records.</td></tr>{% endif %}</table>
+{% if r.adjustments %}<h3>Scholarships / adjustments</h3><table><tr><th>Type</th><th>Amount</th><th>Status</th><th>Action</th></tr>{% for a in r.adjustments %}<tr><td>{{ a.get_kind_display }}</td><td>₱{{ a.amount|floatformat:2 }}</td><td>{{ a.get_status_display }}</td><td>{% if can_verify and a.status == "PENDING" %}<form method="post" action="{% url 'financial_adjustment_review' a.pk %}">{% csrf_token %}<button name="decision" value="APPROVED">Approve</button><button name="decision" value="REJECTED">Reject</button></form>{% endif %}</td></tr>{% endfor %}</table>{% endif %}
+{% if r.latest_cor %}<p><a href="{% url 'cor_print' r.enrollment.pk r.latest_cor.version %}">View COR v{{ r.latest_cor.version }}</a></p>{% endif %}
+</section>
+{% empty %}<section class="panel">No billing records.</section>{% endfor %}
+{% endblock %}

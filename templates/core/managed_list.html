@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block content %}
+<p><a href="{% url 'academic_overview' %}">← Academic setup</a></p><h1>{{ title }}</h1>
+{% if can_manage %}<p><a class="button primary" href="{% url 'managed_create' slug %}">+ Add {{ title|lower }}</a></p>{% endif %}
+<table><tr><th>Record</th><th>Details</th><th>Actions</th></tr>{% for obj in objects %}<tr><td>{{ obj }}</td><td>{% if obj.code %}Code: {{ obj.code }}{% endif %}{% if obj.name %}{{ obj.name }}{% endif %}{% if obj.program %}{{ obj.program }}{% endif %}{% if obj.term %} · {{ obj.term }}{% endif %}{% if obj.status %} · {{ obj.get_status_display }}{% endif %}</td><td>{% if can_manage %}<a href="{% url 'managed_edit' slug obj.pk %}">Edit</a> <form method="post" action="{% url 'managed_delete' slug obj.pk %}" class="inline" onsubmit="return confirm('Delete this record?');">{% csrf_token %}<button class="link-button" type="submit">Delete</button></form>{% else %}View only{% endif %}</td></tr>{% empty %}<tr><td colspan="3">No records yet.</td></tr>{% endfor %}</table>
+{% endblock %}

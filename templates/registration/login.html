@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel narrow">
+    <h1>Student &amp; Staff Login</h1>
+
+    <p class="muted">
+        Students: enter your Student ID as your username.
+        For a newly created student account, the initial password
+        is your last name (case-sensitive).
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <p>
+            <label for="id_username">Student ID / Username</label>
+            {{ form.username }}
+        </p>
+
+        <p>
+            <label for="id_password">Password</label>
+            <span style="display: flex; gap: 8px; align-items: center;">
+                {{ form.password }}
+                <button
+                    type="button"
+                    id="togglePassword"
+                    class="button"
+                    onclick="togglePasswordVisibility()">
+                    Show
+                </button>
+            </span>
+        </p>
+
+        {% if form.errors %}
+            <p class="errorlist">
+                Your username or password is incorrect. Please try again.
+            </p>
+        {% endif %}
+
+        <input type="hidden" name="next" value="{{ next }}">
+        <button class="primary" type="submit">Login</button>
+    </form>
+
+    <p><a href="{% url 'password_reset' %}">Forgot your password? Students and staff can reset their own passwords here.</a></p>
+
+    <p class="muted">
+        After signing in, students and staff can change their passwords
+        using the Change Password link.
+    </p>
+</section>
+
+<script>
+function togglePasswordVisibility() {
+    const passwordField = document.getElementById("id_password");
+    const toggleButton = document.getElementById("togglePassword");
+
+    if (passwordField.type === "password") {
+        passwordField.type = "text";
+        toggleButton.textContent = "Hide";
+    } else {
+        passwordField.type = "password";
+        toggleButton.textContent = "Show";
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block content %}
+<section class="panel narrow">
+<h1>Official Payment Acknowledgment</h1>
+<p><strong>Receipt No.:</strong> {{ payment.receipt_number }}</p>
+<p><strong>Student:</strong> {{ payment.enrollment.student }}</p>
+<p><strong>Student ID:</strong> {{ payment.enrollment.student.student_id }}</p>
+<p><strong>Term:</strong> {{ payment.enrollment.term }}</p>
+<p><strong>Amount:</strong> ₱{{ payment.amount|floatformat:2 }}</p>
+<p><strong>Payment method:</strong> {{ payment.get_method_display }}</p>
+<p><strong>Reference:</strong> {{ payment.reference_no|default:"—" }}</p>
+<p><strong>Verified:</strong> {{ payment.verified_at|date:"Y-m-d H:i" }}</p>
+<p><strong>Verified by:</strong> {{ payment.verified_by|default:"—" }}</p>
+<p class="muted">This system-generated acknowledgment confirms that the payment record was verified by authorized school personnel. It is not a provider-issued GCash/Maya transaction receipt.</p>
+<button type="button" onclick="window.print()">Print receipt</button>
+</section>{% endblock %}

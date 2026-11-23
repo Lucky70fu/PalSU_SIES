@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block content %}
+<section class="panel narrow"><h1>Request Approved Enrollment Add/Drop</h1>
+<p>{{ enrollment.student }} · {{ enrollment.term }}</p>
+<p class="muted">Requests are reviewed by the Registrar. Changes are applied only after approval and only during the official add/drop period.</p>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button class="primary" type="submit">Submit request</button> <a class="button" href="{% url 'student_enrollment_portal' %}">Cancel</a></form>
+</section>{% endblock %}
