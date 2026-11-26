@@ -252,3 +252,9 @@ Validation on the updated source completed successfully: `python manage.py check
 ### Important integration boundary
 
 The payment-proof upload is a manual verification workflow. A live GCash/Maya payment integration is not included because it requires the institution's merchant onboarding, API credentials, sandbox account, provider-specific checkout flow and webhook signing configuration. A manual screenshot/reference must never be described as an automatically authenticated payment.
+
+### Authors
+- **Russel Aaron Sarastal (tinapay-aa)**
+- **Christian Dave Denzon (Ch8967)**
+- **Mark Kevin Sanchez (vioxvanitas)**
+- **Ralph Jeffrey Cerdeña (Lucky70fu)**
